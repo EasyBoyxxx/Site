@@ -1,0 +1,2144 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Поэтический фильм</title>
+    
+    <!-- ПРОСТОЙ И КРАСИВЫЙ ШРИФТ -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        /* БАЗОВЫЕ СТИЛИ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Merriweather', serif;
+            background: #000;
+            color: white;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* ОСНОВНОЙ КОНТЕЙНЕР */
+        #main {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 1;
+            transition: opacity 0.5s;
+        }
+        
+        /* ФОНЫ - ОБНОВЛЕНО ДЛЯ ИЗОБРАЖЕНИЙ */
+        .scene-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1.2s ease-in-out;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        .scene-bg.active { 
+            opacity: 1; 
+        }
+        
+        /* Затемнение фона для лучшей читаемости текста */
+        .scene-bg::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1;
+        }
+        
+        /* Для конвертной сцены делаем затемнение сильнее */
+        #envelopeScene .scene-bg::after {
+            background: rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Чтобы текст был поверх затемнения */
+        .text-line, .dots, .music-btn, .back-button {
+            position: relative;
+            z-index: 3;
+        }
+        
+        /* КОНТЕЙНЕР ДЛЯ ЭФФЕКТОВ */
+        .effects-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+            overflow: hidden;
+        }
+        
+        /* ОБЩИЕ СТИЛИ ДЛЯ ЭФФЕКТОВ */
+        .effect {
+            position: absolute;
+            pointer-events: none;
+        }
+        
+        /* КЛАССЫ ДЛЯ УПРАВЛЕНИЯ ВИДИМОСТЬЮ ЭФФЕКТОВ */
+        .effect.hidden {
+            opacity: 0 !important;
+            visibility: hidden !important;
+        }
+        
+        .effect.visible {
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        
+        /* ЭФФЕКТ 1: РОЗОВЫЕ ЛЕПЕСТКИ (СЦЕНА 2) */
+        .petal {
+            width: 15px;
+            height: 15px;
+            background: linear-gradient(45deg, #ffb6c1, #ff69b4);
+            border-radius: 50% 0 50% 50%;
+            transform: rotate(45deg);
+            position: absolute;
+            filter: blur(0.5px);
+            animation: floatPetal linear infinite;
+        }
+        
+        @keyframes floatPetal {
+            0% {
+                transform: translateY(-10px) rotate(0deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* ЭФФЕКТ 2: ГОРЯЩИЙ ОГОНЬ (СЦЕНА 3) */
+        .fire-effect {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(to top, 
+                rgba(255, 0, 0, 0) 0%,
+                rgba(255, 69, 0, 0.6) 20%,
+                rgba(255, 140, 0, 0.4) 40%,
+                rgba(255, 215, 0, 0.2) 60%,
+                rgba(255, 255, 255, 0) 100%);
+            opacity: 0.7;
+            filter: blur(10px);
+            animation: flickerFire 2s ease-in-out infinite alternate;
+        }
+        
+        .fire-particle {
+            position: absolute;
+            bottom: 0;
+            width: 5px;
+            height: 5px;
+            background: #ff4500;
+            border-radius: 50%;
+            filter: blur(2px);
+            animation: riseUp 3s ease-in infinite;
+        }
+        
+        @keyframes flickerFire {
+            0%, 100% { 
+                opacity: 0.6;
+                transform: scaleY(1);
+            }
+            50% { 
+                opacity: 0.8;
+                transform: scaleY(1.1);
+            }
+        }
+        
+        @keyframes riseUp {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-100px) scale(0);
+                opacity: 0;
+            }
+        }
+        
+        /* ЭФФЕКТ 3: СИЯНИЕ СВЕРХУ (СЦЕНА 4) */
+        .glow-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            background: radial-gradient(
+                ellipse at center,
+                rgba(255, 255, 255, 0.3) 0%,
+                rgba(255, 255, 255, 0.1) 40%,
+                rgba(255, 255, 255, 0) 70%
+            );
+            animation: glowPulse 4s ease-in-out infinite alternate;
+        }
+        
+        .glow-particle {
+            position: absolute;
+            top: 50px;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            filter: blur(1px);
+            animation: glowFloat 6s ease-in-out infinite;
+        }
+        
+        @keyframes glowPulse {
+            0% { 
+                opacity: 0.3;
+                transform: translateY(-10px);
+            }
+            100% { 
+                opacity: 0.6;
+                transform: translateY(10px);
+            }
+        }
+        
+        @keyframes glowFloat {
+            0%, 100% {
+                transform: translateX(-100px) translateY(0);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translateX(100px) translateY(20px);
+                opacity: 0.6;
+            }
+        }
+        
+        /* ЭФФЕКТ 4: МЕРЦАЮЩИЕ ОГОНЬКИ (СЦЕНА 5) */
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            filter: blur(0.5px);
+            box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
+            animation: sparkleTwinkle 3s ease-in-out infinite;
+        }
+        
+        @keyframes sparkleTwinkle {
+            0%, 100% { 
+                opacity: 0.2;
+                transform: scale(0.8);
+            }
+            50% { 
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+        
+        /* ЭФФЕКТ 5: ПАДАЮЩИЙ СНЕГ (СЦЕНА 6) */
+        .snowflake {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+            filter: blur(0.5px);
+            animation: fallSnow linear infinite;
+        }
+        
+        @keyframes fallSnow {
+            0% {
+                transform: translateY(-10px) translateX(0) rotate(0deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(100vh) translateX(100px) rotate(180deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Для стартовой сцены (без изображения) */
+        .start-scene::after {
+            display: none;
+        }
+        
+        /* НАЧАЛЬНАЯ СЦЕНА (ЗАПУСКАЮЩАЯ) */
+        .start-scene {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 30px;
+            z-index: 10;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+        }
+        
+        .start-title {
+            font-size: clamp(2.5rem, 8vw, 3.5rem);
+            font-weight: 300;
+            margin-bottom: 20px;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 1s ease-out 0.5s forwards;
+        }
+        
+        .start-subtitle {
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            font-weight: 300;
+            margin-bottom: 40px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease-out 1s forwards;
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .start-button {
+            background: transparent;
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 18px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease-out 1.5s forwards;
+            transition: all 0.3s;
+            font-family: 'Merriweather', serif;
+            letter-spacing: 1px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .start-button:active {
+            background: rgba(255,255,255,0.1);
+            transform: scale(0.98);
+        }
+        
+        .start-hint {
+            position: absolute;
+            bottom: 30px;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.6);
+            opacity: 0;
+            animation: fadeIn 1s ease-out 2s forwards;
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        /* ОСНОВНЫЕ СЦЕНЫ С ТЕКСТОМ */
+        .text-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.8s;
+        }
+        
+        .text-container.active {
+            opacity: 1;
+        }
+        
+        .text-line {
+            position: absolute;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+            max-width: 85%;
+            padding: 30px 25px;
+            
+            /* УБИРАЕМ ЧЁРНЫЙ ФОН И РАМКИ */
+            background: transparent !important;
+            border: none !important;
+            backdrop-filter: none;
+            box-shadow: none;
+        }
+        
+        .text-line.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* ОДИН ШРИФТ ДЛЯ ВСЕХ СЦЕН - Merriweather */
+        .text {
+            font-family: 'Merriweather', serif;
+            font-size: clamp(1.3rem, 4vw, 2rem);
+            line-height: 1.4;
+            font-weight: 300;
+            letter-spacing: 0.3px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            
+            /* Градиент для текста - одинаковый для всех сцен */
+            background: linear-gradient(45deg, #ffffff, #f8f8f8, #ffffff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            background-size: 200% auto;
+        }
+        
+        /* РАЗНЫЕ НАСТРОЙКИ ДЛЯ РАЗНЫХ СТРОК (в рамках одного шрифта) */
+        .text-line[data-scene="1"] .text {
+            font-weight: 400;
+            font-style: italic;
+            font-size: clamp(1.3rem, 4vw, 2rem);
+        }
+        
+        .text-line[data-scene="2"] .text {
+            font-weight: 400;
+	    font-style: italic;
+	    font-size: clamp(1.3rem, 4vw, 2rem);
+        }
+        
+        .text-line[data-scene="3"] .text {
+            font-weight: 400;
+            font-style: italic;
+	    font-size: clamp(1.3rem, 4vw, 2rem);
+        }
+        
+        .text-line[data-scene="4"] .text {
+            font-weight: 400;
+	    font-style: italic;
+	    font-size: clamp(1.3rem, 4vw, 2rem);
+        }
+        
+        .text-line[data-scene="5"] .text {
+            font-weight: 400;
+font-style: italic;
+            font-size: clamp(1.3rem, 4vw, 2rem);
+        }
+        
+        .text-line[data-scene="6"] .text {
+            font-weight: 400;
+font-style: italic;
+            font-size: clamp(1.3rem, 4vw, 2rem);
+        }
+        
+        @keyframes textPulse {
+            0% { 
+                filter: brightness(1);
+                background-size: 100% auto;
+            }
+            100% { 
+                filter: brightness(1.3);
+                background-size: 200% auto;
+            }
+        }
+        
+        /* ИНДИКАТОР */
+        .dots {
+            position: absolute;
+            bottom: 25px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            z-index: 5;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        
+        .dots.active {
+            opacity: 1;
+        }
+        
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            cursor: pointer;
+        }
+        
+        .dot.active {
+            background: #ff6b6b;
+            transform: scale(1.4);
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+        }
+        
+        /* ОТДЕЛЬНАЯ СЦЕНА КОНВЕРТА */
+        .envelope-scene {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f3460, #533483);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s;
+            z-index: 20;
+            overflow: hidden;
+        }
+        
+        .envelope-scene.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        /* КОНТЕЙНЕР ДЛЯ КОНВЕРТА И ПИСЬМА */
+        .envelope-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 100px;
+        }
+        
+        /* ПОЛНОЦЕННЫЙ КОНВЕРТ */
+        .envelope-wrapper {
+            position: relative;
+            width: 280px;
+            height: 190px;
+            perspective: 1000px;
+            z-index: 2;
+        }
+        
+        .envelope {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .envelope:hover {
+            transform: translateY(-5px);
+        }
+        
+        /* ОСНОВНАЯ ЧАСТЬ КОНВЕРТА */
+        .envelope-base {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f5cac3, #f7d7c4);
+            border-radius: 8px;
+            box-shadow: 
+                0 15px 35px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.4),
+                inset 0 -1px 0 rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+        
+        /* КЛАПАН КОНВЕРТА */
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f28482, #f5a3a2);
+            border-radius: 8px 8px 0 0;
+            transform-origin: top;
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            z-index: 2;
+            box-shadow: 0 -3px 10px rgba(0,0,0,0.2);
+            
+            /* Создаём треугольную форму клапана */
+            clip-path: polygon(0% 0%, 100% 0%, 50% 50%);
+        }
+        
+        .envelope.open .envelope-flap {
+            transform: rotateX(180deg);
+        }
+        
+        /* ПОЧТОВАЯ МАРКА */
+        .envelope-stamp {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 50px;
+            height: 35px;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            border-radius: 4px;
+            z-index: 3;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            
+            /* Текст на марке */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            transform: rotate(5deg);
+        }
+        
+        /* АДРЕС НА КОНВЕРТЕ */
+        .envelope-address {
+            position: absolute;
+            bottom: 30px;
+            left: 25px;
+            font-family: 'Merriweather', serif;
+            font-size: 0.9rem;
+            color: #5a3921;
+            z-index: 3;
+            text-shadow: 0 1px 1px rgba(255,255,255,0.5);
+        }
+        
+        /* ПИСЬМО - ИЗНАЧАЛЬНО СКРЫТО ВНУТРИ КОНВЕРТА */
+        .letter-wrapper {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 240px;
+            min-height: 100px;
+            perspective: 1000px;
+            z-index: 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+        
+        /* Когда конверт открыт - показываем ВЕРХНЮЮ ЧАСТЬ письма */
+        .envelope.open .letter-wrapper {
+            opacity: 1;
+            visibility: visible;
+            z-index: 1;
+            transform: translateY(-20px);
+            height: 40px !important;
+            min-height: 40px !important;
+            overflow: hidden !important;
+            pointer-events: none;
+        }
+        
+        /* Когда письмо ВЫЕЗЖАЕТ из конверта (второй клик) */
+        .letter-wrapper.extracted {
+            top: -100px !important;
+            left: 20px !important;
+            width: 260px !important;
+            height: auto !important;
+            min-height: 100px !important;
+            z-index: 10 !important;
+            transform: translateY(0) !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: all !important;
+            overflow: visible !important;
+        }
+        
+        /* КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: Письмо в центре экрана БЕЗ вылета за границы */
+        .letter-wrapper.centered {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+            transform: none !important;
+            z-index: 30 !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: all !important;
+            overflow: auto !important;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 20px !important;
+        }
+        
+        /* Контейнер для центрированного письма */
+        .letter-container {
+            width: 90%;
+            max-width: 400px;
+            max-height: 70vh;
+            transform-origin: center;
+            transition: transform 0.3s;
+        }
+        
+        .letter-wrapper.centered .letter-container {
+            animation: letterScale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        
+        @keyframes letterScale {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .letter {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 250px;
+            transform-style: preserve-3d;
+            cursor: pointer;
+            transition: transform 0.8s ease;
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform-origin: center;
+        }
+        
+        .letter.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        /* ЛИЦЕВАЯ СТОРОНА ПИСЬМА */
+        .letter-front, .letter-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 6px;
+            box-shadow: 
+                0 8px 25px rgba(0,0,0,0.25),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            overflow: hidden;
+        }
+        
+        .letter-front {
+            background: #fefae0;
+            transform: rotateY(0deg);
+            display: flex;
+            flex-direction: column;
+            padding: 25px 30px 35px 30px;
+        }
+        
+        .letter-back {
+            background: #fefae0;
+            transform: rotateY(180deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+        
+        .letter-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        .letter-title {
+            font-family: 'Merriweather', serif;
+            font-size: 1.5rem;
+            color: #9d5c63;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 700;
+            line-height: 1.3;
+            flex-shrink: 0;
+        }
+        
+        /* Контейнер для текста с автопрокруткой */
+        .text-scroll-container {
+            position: relative;
+            flex: 1;
+            overflow: hidden;
+            min-height: 150px;
+            max-height: 200px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 15px;
+        }
+        
+        .text-content {
+            position: absolute;
+            width: 100%;
+            padding-right: 10px;
+            color: #333333 !important;
+            font-family: 'Merriweather', serif;
+            font-size: 0.7rem;
+            line-height: 1.6;
+            animation: scrollText 40s linear infinite;
+            animation-play-state: paused;
+            top: 0;
+        }
+        
+        /* Анимация автопрокрутки */
+        @keyframes scrollText {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-100%);
+            }
+        }
+        
+        /* Класс для активации автопрокрутки */
+        .text-content.scrolling {
+            animation-play-state: running;
+        }
+        
+        /* Градиенты для плавного скролла */
+        .text-scroll-container::before,
+        .text-scroll-container::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 30px;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .text-scroll-container::before {
+            top: 0;
+            background: linear-gradient(to bottom, #fefae0 0%, transparent 100%);
+        }
+        
+        .text-scroll-container::after {
+            bottom: 0;
+            background: linear-gradient(to top, #fefae0 0%, transparent 100%);
+        }
+        
+        .text-scroll-container.scrolling::before,
+        .text-scroll-container.scrolling::after {
+            opacity: 1;
+        }
+        
+        .letter-signature {
+            text-align: right;
+            font-style: italic;
+            color: #333333 !important;
+            margin-top: 10px;
+            font-size: 0.95rem;
+            padding-top: 15px;
+            border-top: 1px dashed rgba(157, 92, 99, 0.3);
+            flex-shrink: 0;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        
+        /* ОБРАТНАЯ СТОРОНА ПИСЬМА (ФОТО) */
+        .letter-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+        
+        /* ПОДСКАЗКИ */
+        .envelope-hint {
+            margin-top: 30px;
+            color: rgba(255,255,255,0.8);
+            font-family: 'Merriweather', serif;
+            font-size: 1.1rem;
+            text-align: center;
+            animation: hintPulse 2s infinite;
+            padding: 10px 20px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            transition: opacity 0.5s;
+            z-index: 2;
+        }
+        
+        .letter-hint {
+            position: absolute;
+            bottom: -40px;
+            left: 0;
+            width: 100%;
+            color: rgba(255,255,255,0.8);
+            font-family: 'Merriweather', serif;
+            font-size: 0.9rem;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 2;
+        }
+        
+        .letter-wrapper.extracted .letter-hint {
+            opacity: 1;
+            animation: hintPulse 2s infinite;
+        }
+        
+        /* Кнопка закрытия для центрированного письма */
+        .close-letter-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 31;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .letter-wrapper.centered .close-letter-btn {
+            display: flex;
+        }
+        
+        @keyframes hintPulse {
+            0%, 100% { opacity: 0.7; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(-5px); }
+        }
+        
+        /* КНОПКА ВОЗВРАТА */
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-family: 'Merriweather', serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+            z-index: 25;
+        }
+        
+        .back-button:active {
+            background: rgba(255,255,255,0.1);
+            transform: scale(0.95);
+        }
+        
+        /* МУЗЫКА */
+        .music-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            cursor: pointer;
+            z-index: 10;
+            font-family: 'Merriweather', serif;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+        }
+        
+        .music-btn.active {
+            opacity: 1;
+        }
+        
+        .music-btn:active {
+            background: rgba(255,255,255,0.1);
+            transform: scale(0.95);
+        }
+        
+        /* АДАПТИВНЫЙ РАЗМЕР ПИСЬМА */
+        @media (max-height: 700px) {
+            .letter-container {
+                width: 95%;
+                max-width: 350px;
+            }
+            
+            .letter-front {
+                padding: 20px 25px 30px 25px;
+            }
+            
+            .letter-title {
+                font-size: 1.3rem;
+                margin-bottom: 15px;
+            }
+            
+            .text-scroll-container {
+                min-height: 100px;
+                max-height: 200px;
+            }
+            
+            .text-content {
+                font-size: 0.9rem;
+                line-height: 1.5;
+            }
+            
+            .letter-signature {
+                min-height: 50px;
+                font-size: 0.9rem;
+                padding-top: 12px;
+            }
+        }
+        
+        @media (max-height: 600px) {
+            .letter-container {
+                width: 95%;
+                max-width: 320px;
+                max-height: 85vh;
+            }
+            
+            .letter-front {
+                padding: 15px 20px 25px 20px;
+            }
+            
+            .letter-title {
+                font-size: 1.2rem;
+                margin-bottom: 12px;
+            }
+            
+            .text-scroll-container {
+                min-height: 80px;
+                max-height: 180px;
+            }
+            
+            .text-content {
+                font-size: 0.85rem;
+                line-height: 1.4;
+            }
+            
+            .letter-signature {
+                min-height: 45px;
+                font-size: 0.85rem;
+                padding-top: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .letter-container {
+                width: 90%;
+                max-width: 300px;
+            }
+            
+            .letter-wrapper.extracted {
+                top: -10px !important;
+            }
+            
+            /* Уменьшаем количество частиц на мобильных */
+            .petal, .fire-particle, .glow-particle, .sparkle, .snowflake {
+                transform: scale(0.7);
+            }
+        }
+        
+        /* Отключаем анимации при prefers-reduced-motion */
+        @media (prefers-reduced-motion: reduce) {
+            .petal, .fire-particle, .glow-particle, .sparkle, .snowflake,
+            .fire-effect, .glow-effect {
+                animation: none !important;
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ОСНОВНОЙ ЭКРАН -->
+    <div id="main">
+        <!-- ФОНЫ - ЗАМЕНЕНЫ НА ИЗОБРАЖЕНИЯ -->
+        <!-- 
+            ИНСТРУКЦИЯ: Замените URL в атрибутах style на свои изображения
+            Формат: style="background-image: url('ВАША_ССЫЛКА');"
+        -->
+        
+        <div class="scene-bg active" style="background-image: url('https://i.ibb.co/rRzcgNQk/3c1327c1e3bbe652dae8b7354ff7fbad.jpg');"></div>
+        <div class="scene-bg" style="background-image: url('https://i.ibb.co/b58r2pQm/garden.jpg');"></div>
+        <div class="scene-bg" style="background-image: url('https://i.ibb.co/ynqFcW1v/knight.jpg');"></div>
+        <div class="scene-bg" style="background-image: url('https://i.ibb.co/7tynfbzm/aurora.jpg');"></div>
+        <div class="scene-bg" style="background-image: url('https://i.ibb.co/3mVjm7SN/4b67ce9937def895d1abe7288850eed5.jpg');"></div>
+        <div class="scene-bg" style="background-image: url('https://i.ibb.co/Nn2vF2z0/winter.jpg');"></div>
+        
+        <!-- КОНТЕЙНЕР ДЛЯ ЭФФЕКТОВ -->
+        <div class="effects-container" id="effectsContainer"></div>
+        
+        <!-- НАЧАЛЬНАЯ СЦЕНА (ЗАПУСК) -->
+        <div class="start-scene" id="startScene">
+            <h1 class="start-title">Упущенные мгновения</h1>
+            <p class="start-subtitle">Поэтическое путешествие</p>
+            <button class="start-button" id="startButton">Начать просмотр</button>
+            <div class="start-hint">Можно листать свайпами вверх/вниз</div>
+        </div>
+        
+        <!-- ОСНОВНЫЕ СЦЕНЫ С ТЕКСТОМ -->
+        <div class="text-container" id="textContainer">
+            <div class="text-line" data-scene="1">
+                <div class="text">Это история о том,
+<br></br>
+				  Как повстречал прекрасную персону.	</div>
+            </div>
+            <div class="text-line" data-scene="2">
+                <div class="text">В тебе увидел теплоту
+<br></br>			  И сад спокойствия цветущий
+<br></br>			  Как яркий луч пробилась ты во тьму
+<br></br>			  Все освещая факелом горящим</div>
+            </div>
+            <div class="text-line" data-scene="3">
+                <div class="text">Как рыцарь я готов
+<br></br>			  На верность присягнуть тебе,
+<br></br>			  И оберегать от всех врагов
+<br></br>			  До дней своих последних в этом мире</div>
+            </div>
+            <div class="text-line" data-scene="4">
+                <div class="text">Этот мир большой
+<br></br>			  Но только в нем есть человек
+<br></br>			  Который дорог мне
+<br></br>			  Уже продолжительное время</div>
+            </div>
+            <div class="text-line" data-scene="5">
+                <div class="text">Что должно было произойти,
+<br></br>			  Для того чтобы мы встретились
+<br></br>			  И представить сложно,
+<br></br>			  Но одно я знаю точно</div>
+            </div>
+            <div class="text-line" data-scene="6">
+                <div class="text">Ты
+<br></br>		          единственное желание</div>
+            </div>
+        </div>
+        
+        <!-- ИНДИКАТОР -->
+        <div class="dots" id="dots">
+            <div class="dot active" data-scene="1"></div>
+            <div class="dot" data-scene="2"></div>
+            <div class="dot" data-scene="3"></div>
+            <div class="dot" data-scene="4"></div>
+            <div class="dot" data-scene="5"></div>
+            <div class="dot" data-scene="6"></div>
+        </div>
+        
+        <!-- МУЗЫКА -->
+        <button class="music-btn" id="musicBtn">♪</button>
+        
+        <!-- ОТДЕЛЬНАЯ СЦЕНА КОНВЕРТА -->
+        <div class="envelope-scene" id="envelopeScene">
+            <!-- КНОПКА ВОЗВРАТА -->
+            <button class="back-button" id="backButton">← Назад к стихам</button>
+            
+            <!-- КОНТЕЙНЕР ДЛЯ КОНВЕРТА И ПИСЬМА -->
+            <div class="envelope-container">
+                <!-- КОНВЕРТ -->
+                <div class="envelope-wrapper">
+                    <div class="envelope" id="envelope">
+                        <!-- Основная часть -->
+                        <div class="envelope-base"></div>
+                        
+                        <!-- Марка -->
+                        <div class="envelope-stamp">ПОЧТА</div>
+                        
+                        <!-- Адрес -->
+                        <div class="envelope-address">
+                            Для самого важного<br>
+                            человека
+                        </div>
+                        
+                        <!-- Клапан -->
+                        <div class="envelope-flap"></div>
+                    </div>
+                </div>
+                
+                <!-- ПИСЬМО (изначально СКРЫТО внутри конверта) -->
+                <div class="letter-wrapper" id="letterWrapper">
+                    <button class="close-letter-btn" id="closeLetterBtn">×</button>
+                    <div class="letter-container">
+                        <div class="letter" id="letter">
+                            <!-- Лицевая сторона -->
+                            <div class="letter-front">
+                                <div class="letter-content">
+                                    <h3 class="letter-title">Желание на Новый Год</h3>
+                                    <div class="text-scroll-container" id="textScrollContainer">
+                                        <div class="text-content" id="textContent">
+                                            Каждая строка - это частичка тепла и света, 
+					    которые я хочу передать тебе. Встреча с тобой,  
+                                            самое лучшее что произошло в этом году. 
+					    Мое желание на следующий год только чтобы у нас все сложилось. 
+					    Люблю тебя всем сердцем и это не просто слова. Нажми на письмо :)
+					    
+                                        </div>
+                                    </div>
+                                    <div class="letter-signature">
+                                        С теплом,<br>
+                                        Тот, кто любит тебя
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Обратная сторона (фото) -->
+                            <div class="letter-back">
+                                <img src="https://i.ibb.co/bg3X4qng/IMG-20251212-184226.jpg" 
+                                     alt="Счастливый момент" class="letter-photo">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="letter-hint">Нажми на письмо, чтобы приблизить</div>
+                </div>
+            </div>
+            
+            <!-- ПОДСКАЗКА -->
+            <div class="envelope-hint" id="envelopeHint">
+                Нажми на конверт, чтобы открыть письмо
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('load', function() {
+            console.log('🎬 Поэтический фильм загружен');
+            document.getElementById('main').style.opacity = '1';
+            
+            // Предзагрузка фоновых изображений
+            preloadBackgroundImages();
+            
+            // Создание эффектов заранее
+            createAllEffects();
+            
+            initFilm();
+        });
+        
+        // Функция предзагрузки фоновых изображений
+        function preloadBackgroundImages() {
+            console.log('🖼️ Предзагрузка фоновых изображений...');
+            
+            const bgElements = document.querySelectorAll('.scene-bg');
+            const loadedImages = [];
+            
+            bgElements.forEach((bg, index) => {
+                const bgStyle = bg.style.backgroundImage;
+                if (bgStyle && bgStyle !== 'none') {
+                    const bgUrl = bgStyle
+                        .replace('url("', '')
+                        .replace('")', '')
+                        .replace("url('", "")
+                        .replace("')", "");
+                    
+                    if (bgUrl) {
+                        const img = new Image();
+                        img.src = bgUrl;
+                        img.onload = () => {
+                            console.log(`✓ Изображение ${index + 1} загружено`);
+                            loadedImages.push(true);
+                            if (loadedImages.length === bgElements.length) {
+                                console.log('✅ Все фоновые изображения загружены');
+                            }
+                        };
+                        img.onerror = () => {
+                            console.warn(`✗ Ошибка загрузки изображения ${index + 1}`);
+                            // Используем fallback цвет, если изображение не загрузилось
+                            bg.style.backgroundImage = 'none';
+                            bg.style.backgroundColor = getFallbackColor(index);
+                        };
+                    }
+                }
+            });
+        }
+        
+        // Fallback цвета на случай, если изображения не загрузятся
+        function getFallbackColor(index) {
+            const colors = [
+                '#1a1a2e',
+                '#0f3460',
+                '#1a1a2e',
+                '#533483',
+                '#e94560',
+                '#ff6b6b'
+            ];
+            return colors[index] || '#1a1a2e';
+        }
+        
+        // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
+        let currentScene = 1;
+        const totalScenes = 6;
+        let autoPlayTimer;
+        let isFilmStarted = false;
+        let isEnvelopeOpened = false;
+        let isLetterExtracted = false;
+        let isLetterFlipped = false;
+        let isLetterCentered = false;
+        let isTextScrolling = false;
+        
+        // СОЗДАНИЕ ВСЕХ ЭФФЕКТОВ ЗАРАНЕЕ
+        function createAllEffects() {
+            console.log('✨ Создаём эффекты для всех сцен...');
+            const effectsContainer = document.getElementById('effectsContainer');
+            
+            // Сцена 2: Розовые лепестки
+            createScene2Effects(effectsContainer);
+            
+            // Сцена 3: Горящий огонь
+            createScene3Effects(effectsContainer);
+            
+            // Сцена 4: Сияние сверху
+            createScene4Effects(effectsContainer);
+            
+            // Сцена 5: Мерцающие огоньки
+            createScene5Effects(effectsContainer);
+            
+            // Сцена 6: Падающий снег
+            createScene6Effects(effectsContainer);
+            
+            // Изначально скрываем все эффекты (сцена 1 без эффектов)
+            hideAllEffects();
+        }
+        
+        // СОЗДАНИЕ ЭФФЕКТОВ ДЛЯ КАЖДОЙ СЦЕНЫ
+        function createScene2Effects(container) {
+            // Создаём 15 лепестков
+            for (let i = 0; i < 15; i++) {
+                const petal = document.createElement('div');
+                petal.className = 'petal effect';
+                
+                // Случайные начальные позиции
+                const left = Math.random() * 100;
+                const delay = Math.random() * 5;
+                const duration = 10 + Math.random() * 10;
+                
+                petal.style.left = `${left}%`;
+                petal.style.animationDuration = `${duration}s`;
+                petal.style.animationDelay = `${delay}s`;
+                
+                container.appendChild(petal);
+            }
+        }
+        
+        function createScene3Effects(container) {
+            // Основной огненный эффект
+            const fireEffect = document.createElement('div');
+            fireEffect.className = 'fire-effect effect';
+            container.appendChild(fireEffect);
+            
+            // Создаём 20 огненных частиц
+            for (let i = 0; i < 20; i++) {
+                const fireParticle = document.createElement('div');
+                fireParticle.className = 'fire-particle effect';
+                
+                // Случайные начальные позиции и параметры
+                const left = Math.random() * 100;
+                const delay = Math.random() * 3;
+                const duration = 2 + Math.random() * 2;
+                
+                fireParticle.style.left = `${left}%`;
+                fireParticle.style.animationDuration = `${duration}s`;
+                fireParticle.style.animationDelay = `${delay}s`;
+                
+                container.appendChild(fireParticle);
+            }
+        }
+        
+        function createScene4Effects(container) {
+            // Основной эффект сияния
+            const glowEffect = document.createElement('div');
+            glowEffect.className = 'glow-effect effect';
+            container.appendChild(glowEffect);
+            
+            // Создаём 10 сияющих частиц
+            for (let i = 0; i < 10; i++) {
+                const glowParticle = document.createElement('div');
+                glowParticle.className = 'glow-particle effect';
+                
+                // Случайные начальные позиции и параметры
+                const left = Math.random() * 100;
+                const delay = Math.random() * 2;
+                const duration = 4 + Math.random() * 4;
+                
+                glowParticle.style.left = `${left}%`;
+                glowParticle.style.animationDuration = `${duration}s`;
+                glowParticle.style.animationDelay = `${delay}s`;
+                
+                container.appendChild(glowParticle);
+            }
+        }
+        
+        function createScene5Effects(container) {
+            // Создаём 25 мерцающих огоньков
+            for (let i = 0; i < 25; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle effect';
+                
+                // Случайные позиции по всему экрану
+                const left = Math.random() * 100;
+                const top = Math.random() * 100;
+                const delay = Math.random() * 3;
+                const duration = 2 + Math.random() * 2;
+                
+                sparkle.style.left = `${left}%`;
+                sparkle.style.top = `${top}%`;
+                sparkle.style.animationDuration = `${duration}s`;
+                sparkle.style.animationDelay = `${delay}s`;
+                
+                container.appendChild(sparkle);
+            }
+        }
+        
+        function createScene6Effects(container) {
+            // Создаём 30 снежинок
+            for (let i = 0; i < 30; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.className = 'snowflake effect';
+                
+                // Случайные начальные позиции и параметры
+                const left = Math.random() * 100;
+                const delay = Math.random() * 5;
+                const duration = 15 + Math.random() * 10;
+                
+                snowflake.style.left = `${left}%`;
+                snowflake.style.animationDuration = `${duration}s`;
+                snowflake.style.animationDelay = `${delay}s`;
+                
+                container.appendChild(snowflake);
+            }
+        }
+        
+        // СКРЫТЬ ВСЕ ЭФФЕКТЫ
+        function hideAllEffects() {
+            const allEffects = document.querySelectorAll('.effect');
+            allEffects.forEach(effect => {
+                effect.classList.remove('visible');
+                effect.classList.add('hidden');
+            });
+        }
+        
+        // УПРАВЛЕНИЕ ЭФФЕКТАМИ - ПРАВИЛЬНАЯ ВЕРСИЯ (вариант 6)
+        function showEffectsForScene(sceneNum) {
+            console.log(`🎭 Показываем эффекты для сцены ${sceneNum}`);
+            
+            // Сначала скрываем все эффекты
+            hideAllEffects();
+            
+            // Затем показываем только нужные эффекты
+            let selector = '';
+            
+            switch(sceneNum) {
+                case 2:
+                    selector = '.petal';
+                    break;
+                case 3:
+                    selector = '.fire-effect, .fire-particle';
+                    break;
+                case 4:
+                    selector = '.glow-effect, .glow-particle';
+                    break;
+                case 5:
+                    selector = '.sparkle';
+                    break;
+                case 6:
+                    selector = '.snowflake';
+                    break;
+                default:
+                    // Сцены 1 и конверт - без эффектов
+                    selector = '';
+            }
+            
+            if (selector) {
+                document.querySelectorAll(selector).forEach(effect => {
+                    effect.classList.remove('hidden');
+                    effect.classList.add('visible');
+                });
+            }
+        }
+        
+        function initFilm() {
+            console.log('🎞️ Инициализация фильма');
+            
+            // ЭЛЕМЕНТЫ
+            const startScene = document.getElementById('startScene');
+            const startButton = document.getElementById('startButton');
+            const textContainer = document.getElementById('textContainer');
+            const dots = document.getElementById('dots');
+            const musicBtn = document.getElementById('musicBtn');
+            const backgrounds = document.querySelectorAll('.scene-bg');
+            const textLines = document.querySelectorAll('.text-line');
+            const dotElements = document.querySelectorAll('.dot');
+            const envelopeScene = document.getElementById('envelopeScene');
+            const envelope = document.getElementById('envelope');
+            const letterWrapper = document.getElementById('letterWrapper');
+            const letter = document.getElementById('letter');
+            const textScrollContainer = document.getElementById('textScrollContainer');
+            const textContent = document.getElementById('textContent');
+            const envelopeHint = document.getElementById('envelopeHint');
+            const backButton = document.getElementById('backButton');
+            const closeLetterBtn = document.getElementById('closeLetterBtn');
+            
+            // ФУНКЦИИ ДЛЯ АВТОПРОКРУТКИ ТЕКСТА
+            function startAutoScroll() {
+                if (!textContent || isTextScrolling) return;
+                
+                console.log('🚀 Запускаем автопрокрутку текста');
+                
+                const textHeight = textContent.scrollHeight;
+                const containerHeight = textScrollContainer.clientHeight;
+                
+                console.log('Высота текста:', textHeight, 'Высота контейнера:', containerHeight);
+                
+                if (textHeight <= containerHeight + 10) {
+                    console.log('Текст полностью помещается, прокрутка не нужна');
+                    return;
+                }
+                
+                isTextScrolling = true;
+                textScrollContainer.classList.add('scrolling');
+                
+                const scrollDistance = textHeight - containerHeight;
+                const scrollSpeed = Math.max(40, scrollDistance * 0.1);
+                
+                console.log('Скорость прокрутки:', scrollSpeed + 'сек');
+                
+                textContent.classList.add('scrolling');
+                textContent.style.animationDuration = scrollSpeed + 's';
+                
+                console.log('Анимация прокрутки запущена');
+            }
+            
+            function stopAutoScroll() {
+                if (!textContent || !isTextScrolling) return;
+                
+                console.log('⏸️ Останавливаем автопрокрутку текста');
+                isTextScrolling = false;
+                textContent.classList.remove('scrolling');
+                textScrollContainer.classList.remove('scrolling');
+                
+                textContent.style.transform = 'translateY(0)';
+                textContent.style.animation = 'none';
+            }
+            
+            // НАЧАЛЬНАЯ СЦЕНА - КНОПКА ЗАПУСКА
+            startButton.addEventListener('click', function() {
+                startFilm();
+            });
+            
+            startScene.addEventListener('click', function(e) {
+                if (e.target === startScene) {
+                    startFilm();
+                }
+            });
+            
+            // ФУНКЦИЯ ЗАПУСКА ФИЛЬМА
+            function startFilm() {
+                if (isFilmStarted) return;
+                
+                isFilmStarted = true;
+                console.log('🚀 Запускаем фильм');
+                
+                startScene.style.opacity = '0';
+                setTimeout(function() {
+                    startScene.style.display = 'none';
+                }, 500);
+                
+                textContainer.classList.add('active');
+                dots.classList.add('active');
+                musicBtn.classList.add('active');
+                
+                goToScene(1);
+                startAutoPlay();
+                setupSwipes();
+                setupEnvelope();
+                setupMusic();
+                
+                if (navigator.vibrate) {
+                    navigator.vibrate([100, 50, 100]);
+                }
+            }
+            
+            // ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ СЦЕНЫ
+            function goToScene(num) {
+                if (num < 1 || num > totalScenes) return;
+                
+                currentScene = num;
+                
+                // Переключаем фон
+                backgrounds.forEach(bg => bg.classList.remove('active'));
+                if (backgrounds[num - 1]) {
+                    backgrounds[num - 1].classList.add('active');
+                }
+                
+                // Переключаем текст
+                textLines.forEach(line => line.classList.remove('active'));
+                textLines.forEach(line => {
+                    if (parseInt(line.getAttribute('data-scene')) === num) {
+                        line.classList.add('active');
+                    }
+                });
+                
+                // Переключаем индикаторы
+                dotElements.forEach(dot => dot.classList.remove('active'));
+                dotElements.forEach(dot => {
+                    if (parseInt(dot.getAttribute('data-scene')) === num) {
+                        dot.classList.add('active');
+                    }
+                });
+                
+                // Управляем эффектами
+                showEffectsForScene(num);
+                
+                if (navigator.vibrate) {
+                    navigator.vibrate(20);
+                }
+                
+                if (num === totalScenes && !isEnvelopeOpened) {
+                    setTimeout(function() {
+                        showEnvelopeScene();
+                    }, 3500);
+                }
+            }
+            
+            // ПОКАЗАТЬ СЦЕНУ КОНВЕРТА
+            function showEnvelopeScene() {
+                clearInterval(autoPlayTimer);
+                textContainer.classList.remove('active');
+                dots.classList.remove('active');
+                envelopeScene.classList.add('active');
+                
+                // Скрываем все эффекты при переходе к конверту
+                hideAllEffects();
+                
+                resetEnvelope();
+            }
+            
+            // ВОЗВРАТ К СТИХАМ
+            backButton.addEventListener('click', function() {
+                envelopeScene.classList.remove('active');
+                resetEnvelope();
+                stopAutoScroll();
+                textContainer.classList.add('active');
+                dots.classList.add('active');
+                goToScene(1);
+                startAutoPlay();
+            });
+            
+            // КНОПКА ЗАКРЫТИЯ ПИСЬМА В ЦЕНТРИРОВАННОМ РЕЖИМЕ
+            closeLetterBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (isLetterCentered) {
+                    uncenterLetter();
+                }
+            });
+            
+            // СБРОС СОСТОЯНИЯ КОНВЕРТА И ПИСЬМА
+            function resetEnvelope() {
+                isEnvelopeOpened = false;
+                isLetterExtracted = false;
+                isLetterFlipped = false;
+                isLetterCentered = false;
+                
+                stopAutoScroll();
+                
+                envelope.classList.remove('open');
+                letterWrapper.classList.remove('extracted');
+                letterWrapper.classList.remove('centered');
+                letter.classList.remove('flipped');
+                if (textContent) textContent.classList.remove('scrolling');
+                if (textScrollContainer) textScrollContainer.classList.remove('scrolling');
+                
+                setTimeout(() => {
+                    letterWrapper.style.opacity = '0';
+                    letterWrapper.style.visibility = 'hidden';
+                    letterWrapper.style.height = '140px';
+                    letterWrapper.style.top = '20px';
+                    letterWrapper.style.left = '20px';
+                    letterWrapper.style.width = '240px';
+                    letterWrapper.style.zIndex = '0';
+                    letterWrapper.style.pointerEvents = 'none';
+                    letterWrapper.style.position = 'absolute';
+                    letterWrapper.style.overflow = 'visible';
+                    letterWrapper.style.background = 'transparent';
+                    letterWrapper.style.backdropFilter = 'none';
+                    letterWrapper.style.display = 'block';
+                    letterWrapper.style.padding = '0';
+                    
+                    if (textContent) {
+                        textContent.style.transform = 'translateY(0)';
+                        textContent.style.animation = 'none';
+                    }
+                }, 100);
+                
+                envelopeHint.style.opacity = '1';
+                envelopeHint.textContent = 'Нажми на конверт, чтобы открыть письмо';
+                document.querySelector('.letter-hint').style.opacity = '0';
+            }
+            
+            // НАСТРОЙКА КОНВЕРТА И ПИСЬМА
+            function setupEnvelope() {
+                console.log('Настраиваем конверт и письмо...');
+                
+                // Открытие конверта
+                envelope.addEventListener('click', function(e) {
+                    console.log('Клик по конверту, isEnvelopeOpened:', isEnvelopeOpened, 'isLetterExtracted:', isLetterExtracted);
+                    
+                    if (!isEnvelopeOpened) {
+                        isEnvelopeOpened = true;
+                        envelope.classList.add('open');
+                        envelopeHint.style.opacity = '0';
+                        
+                        console.log('Конверт открыт, видна только верхняя часть письма');
+                        
+                        playSuccessSound();
+                        
+                        setTimeout(function() {
+                            envelopeHint.textContent = 'Нажмите ещё раз, чтобы достать письмо';
+                            envelopeHint.style.opacity = '1';
+                        }, 600);
+                        
+                    } else if (!isLetterExtracted) {
+                        console.log('Письмо выезжает из конверта');
+                        extractLetter();
+                    }
+                });
+                
+                // Клик по письму для переворота или центрирования
+                letter.addEventListener('click', function() {
+                    console.log('Клик по письму, isLetterExtracted:', isLetterExtracted, 'isLetterCentered:', isLetterCentered, 'isLetterFlipped:', isLetterFlipped);
+                    
+                    if (isLetterExtracted && !isLetterCentered) {
+                        console.log('Центрируем письмо');
+                        centerLetter();
+                    } else if (isLetterExtracted && isLetterCentered && !isLetterFlipped) {
+                        console.log('Переворачиваем письмо');
+                        flipLetter();
+                    } else if (isLetterExtracted && isLetterCentered && isLetterFlipped) {
+                        console.log('Возвращаем письмо');
+                        unflipLetter();
+                    }
+                });
+                
+                // Клик по фону для выхода из центрированного режима
+                letterWrapper.addEventListener('click', function(e) {
+                    if (isLetterCentered && e.target === letterWrapper) {
+                        console.log('Клик по фону - выходим из центрированного режима');
+                        uncenterLetter();
+                    }
+                });
+                
+                if (textScrollContainer) {
+                    textScrollContainer.addEventListener('mouseenter', function() {
+                        if (isTextScrolling && textContent) {
+                            textContent.style.animationPlayState = 'paused';
+                        }
+                    });
+                    
+                    textScrollContainer.addEventListener('mouseleave', function() {
+                        if (isTextScrolling && textContent) {
+                            textContent.style.animationPlayState = 'running';
+                        }
+                    });
+                    
+                    textScrollContainer.addEventListener('touchstart', function() {
+                        if (isTextScrolling && textContent) {
+                            textContent.style.animationPlayState = 'paused';
+                        }
+                    });
+                    
+                    textScrollContainer.addEventListener('touchend', function() {
+                        setTimeout(() => {
+                            if (isTextScrolling && textContent) {
+                                textContent.style.animationPlayState = 'running';
+                            }
+                        }, 2000);
+                    });
+                }
+            }
+            
+            // ПИСЬМО ВЫЕЗЖАЕТ ИЗ КОНВЕРТА
+            function extractLetter() {
+                isLetterExtracted = true;
+                letterWrapper.classList.add('extracted');
+                envelopeHint.style.opacity = '0';
+                
+                console.log('Письмо извлечено из конверта');
+                
+                setTimeout(() => {
+                    if (textContent) {
+                        textContent.style.opacity = '1';
+                        textContent.style.visibility = 'visible';
+                    }
+                }, 100);
+                
+                if (navigator.vibrate) {
+                    navigator.vibrate(40);
+                }
+                
+                playExtractSound();
+                createConfetti();
+                
+                setTimeout(() => {
+                    document.querySelector('.letter-hint').textContent = 'Нажми на письмо, чтобы приблизить';
+                    document.querySelector('.letter-hint').style.opacity = '1';
+                    
+                    envelopeHint.textContent = 'Теперь нажми на письмо';
+                    envelopeHint.style.opacity = '1';
+                }, 1000);
+            }
+            
+            // ЦЕНТРИРОВАНИЕ ПИСЬМА - КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ
+            function centerLetter() {
+                isLetterCentered = true;
+                letterWrapper.classList.add('centered');
+                
+                console.log('Письмо центрировано');
+                
+                // Обновляем подсказку
+                document.querySelector('.letter-hint').textContent = '';
+                document.querySelector('.letter-hint').style.opacity = '0';
+                
+                // Запускаем автопрокрутку с задержкой
+                setTimeout(() => {
+                    startAutoScroll();
+                }, 1000);
+                
+                if (navigator.vibrate) {
+                    navigator.vibrate([20, 30, 20]);
+                }
+                
+                playCenterSound();
+            }
+            
+            // ВЫХОД ИЗ ЦЕНТРИРОВАННОГО РЕЖИМА
+            function uncenterLetter() {
+                isLetterCentered = false;
+                letterWrapper.classList.remove('centered');
+                
+                console.log('Письмо возвращено из центрированного режима');
+                
+                // Останавливаем автопрокрутку
+                stopAutoScroll();
+                
+                // Возвращаем подсказку
+                setTimeout(() => {
+                    document.querySelector('.letter-hint').textContent = 'Нажми на письмо, чтобы приблизить';
+                    document.querySelector('.letter-hint').style.opacity = '1';
+                }, 300);
+                
+                if (navigator.vibrate) {
+                    navigator.vibrate([20, 30, 20]);
+                }
+                
+                playCenterSound();
+            }
+            
+            // ПЕРЕВОРОТ ПИСЬМА
+            function flipLetter() {
+                isLetterFlipped = true;
+                letter.classList.add('flipped');
+                
+                console.log('Письмо перевёрнуто');
+                
+                stopAutoScroll();
+                
+                if (navigator.vibrate) {
+                    navigator.vibrate([20, 30, 20]);
+                }
+                
+                playFlipSound();
+                
+                document.querySelector('.letter-hint').textContent = 'Нажми ещё раз, чтобы вернуть';
+            }
+            
+            // ОБРАТНЫЙ ПЕРЕВОРОТ ПИСЬМА
+            function unflipLetter() {
+                isLetterFlipped = false;
+                letter.classList.remove('flipped');
+                
+                console.log('Письмо возвращено');
+                
+                setTimeout(() => {
+                    startAutoScroll();
+                }, 500);
+                
+                if (navigator.vibrate) {
+                    navigator.vibrate([20, 30, 20]);
+                }
+                
+                playFlipSound();
+                
+                document.querySelector('.letter-hint').textContent = 'Нажми на письмо, чтобы перевернуть';
+            }
+            
+            // АВТОМАТИЧЕСКАЯ СМЕНА
+            function startAutoPlay() {
+                if (autoPlayTimer) clearInterval(autoPlayTimer);
+                
+                autoPlayTimer = setInterval(function() {
+                    let nextScene = currentScene + 1;
+                    if (nextScene > totalScenes) nextScene = 1;
+                    goToScene(nextScene);
+                }, 5500);
+            }
+            
+            // СВАЙПЫ
+            function setupSwipes() {
+                let startY = 0;
+                let startTime = 0;
+                
+                document.addEventListener('touchstart', function(e) {
+                    startY = e.touches[0].clientY;
+                    startTime = Date.now();
+                }, { passive: true });
+                
+                document.addEventListener('touchend', function(e) {
+                    if (!startY || !isFilmStarted) return;
+                    
+                    const endY = e.changedTouches[0].clientY;
+                    const diff = startY - endY;
+                    const timeDiff = Date.now() - startTime;
+                    
+                    if (timeDiff < 300 && Math.abs(diff) > 40) {
+                        if (diff > 0) {
+                            let next = currentScene + 1;
+                            if (next > totalScenes) next = 1;
+                            goToScene(next);
+                        } else {
+                            let prev = currentScene - 1;
+                            if (prev < 1) prev = totalScenes;
+                            goToScene(prev);
+                        }
+                        
+                        clearInterval(autoPlayTimer);
+                        startAutoPlay();
+                    }
+                    
+                    startY = 0;
+                    startTime = 0;
+                }, { passive: true });
+                
+                dotElements.forEach(dot => {
+                    dot.addEventListener('click', function() {
+                        if (!isFilmStarted) return;
+                        
+                        const sceneNum = parseInt(this.getAttribute('data-scene'));
+                        if (sceneNum !== currentScene) {
+                            goToScene(sceneNum);
+                            clearInterval(autoPlayTimer);
+                            startAutoPlay();
+                        }
+                    });
+                });
+            }
+            
+            // КОНФЕТТИ ЭФФЕКТ
+            function createConfetti() {
+                const colors = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#9b5de5', '#ff8e53'];
+                
+                for (let i = 0; i < 50; i++) {
+                    setTimeout(() => {
+                        const confetti = document.createElement('div');
+                        const color = colors[Math.floor(Math.random() * colors.length)];
+                        
+                        confetti.style.cssText = `
+                            position: fixed;
+                            width: ${Math.random() * 12 + 6}px;
+                            height: ${Math.random() * 12 + 6}px;
+                            background: ${color};
+                            top: 50%;
+                            left: 50%;
+                            border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+                            animation: confettiFall ${Math.random() * 2 + 1}s ease-out forwards;
+                            z-index: 100;
+                            pointer-events: none;
+                            transform: rotate(${Math.random() * 360}deg);
+                        `;
+                        
+                        document.body.appendChild(confetti);
+                        
+                        setTimeout(() => {
+                            if (confetti.parentNode) {
+                                confetti.parentNode.removeChild(confetti);
+                            }
+                        }, 3000);
+                    }, i * 30);
+                }
+                
+                if (!document.querySelector('#confettiAnimation')) {
+                    const style = document.createElement('style');
+                    style.id = 'confettiAnimation';
+                    style.textContent = `
+                        @keyframes confettiFall {
+                            0% { 
+                                opacity: 1; 
+                                transform: translate(0, 0) rotate(0deg); 
+                            }
+                            100% { 
+                                opacity: 0; 
+                                transform: translate(${Math.random() * 400 - 200}px, 100vh) 
+                                rotate(${Math.random() * 720}deg); 
+                            }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+            
+            // ЗВУКИ
+            function playSuccessSound() {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
+                    oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1);
+                    oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2);
+                    oscillator.frequency.setValueAtTime(1046.50, audioContext.currentTime + 0.3);
+                    
+                    gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.8);
+                } catch (e) {
+                    console.log('Звук не доступен:', e);
+                }
+            }
+            
+            function playExtractSound() {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(220.00, audioContext.currentTime);
+                    oscillator.frequency.setValueAtTime(329.63, audioContext.currentTime + 0.1);
+                    oscillator.frequency.setValueAtTime(440.00, audioContext.currentTime + 0.2);
+                    oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime + 0.3);
+                    
+                    gainNode.gain.setValueAtTime(0.12, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.8);
+                } catch (e) {
+                    console.log('Звук извлечения не доступен:', e);
+                }
+            }
+            
+            function playCenterSound() {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(329.63, audioContext.currentTime);
+                    oscillator.frequency.setValueAtTime(392.00, audioContext.currentTime + 0.1);
+                    oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime + 0.2);
+                    
+                    gainNode.gain.setValueAtTime(0.12, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.5);
+                } catch (e) {
+                    console.log('Звук центрирования не доступен:', e);
+                }
+            }
+            
+            function playFlipSound() {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(261.63, audioContext.currentTime);
+                    oscillator.frequency.setValueAtTime(329.63, audioContext.currentTime + 0.1);
+                    oscillator.frequency.setValueAtTime(392.00, audioContext.currentTime + 0.2);
+                    
+                    gainNode.gain.setValueAtTime(0.08, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.6);
+                } catch (e) {
+                    console.log('Звук переворота не доступен:', e);
+                }
+            }
+            
+            // МУЗЫКА
+            let audio = null;
+            let isMusicPlaying = false;
+            
+            function setupMusic() {
+                musicBtn.addEventListener('click', function() {
+                    if (!audio) {
+                        audio = new Audio();
+                        audio.loop = true;
+                        audio.volume = 0.4;
+                        audio.src = 'https://assets.mixkit.co/music/preview/mixkit-happy-day-583.mp3';
+                    }
+                    
+                    if (isMusicPlaying) {
+                        audio.pause();
+                        musicBtn.textContent = '♪';
+                        musicBtn.style.opacity = '0.7';
+                    } else {
+                        audio.play().then(function() {
+                            musicBtn.textContent = '▮▮';
+                            musicBtn.style.opacity = '1';
+                            isMusicPlaying = true;
+                        }).catch(function(e) {
+                            console.log('Музыка не запустилась:', e);
+                            musicBtn.title = 'Нажмите для разрешения звука';
+                        });
+                    }
+                    isMusicPlaying = !isMusicPlaying;
+                });
+            }
+            
+            console.log('✅ Фильм инициализирован, ждём запуска');
+        }
+    </script>
+</body>
+</html>
